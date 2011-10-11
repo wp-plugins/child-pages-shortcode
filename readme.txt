@@ -1,7 +1,7 @@
 === Child Pages Shortcode ===
 Contributors: miyauchi
 Donate link: http://firegoby.theta.ne.jp/
-Tags: widget 
+Tags: shortcode 
 Requires at least: 3.2
 Tested up to: 3.2
 Stable tag: 0.1.0
