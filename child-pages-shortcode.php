@@ -4,7 +4,7 @@ Plugin Name: Child Pages Shortcode
 Author: Takayuki Miyauchi
 Plugin URI: http://wpist.me/wp/child-pages-shortcode/
 Description: You can use shortcode for display child pages from the page.
-Version: 1.0.1
+Version: 1.1.0
 Author URI: http://wpist.me/
 Domain Path: /languages
 Text Domain: child-pages-shortcode
@@ -77,11 +77,20 @@ private function display($p, $template)
 {
     $html = '';
 
-    $template = str_replace('<p>', '', $template);
-    $template = str_replace('</p>', '', $template);
-
-    if (!$template) {
-        $template = $this->get_template();
+    if ($template) {
+        $template = str_replace('<p>', '', $template);
+        $template = str_replace('</p>', '', $template);
+        $template = apply_filters(
+            'child-pages-shortcode-template',
+            $template,
+            $p
+        );
+    } else {
+        $template = apply_filters(
+            'child-pages-shortcode-template',
+            $this->get_template(),
+            $p
+        );
         $html = sprintf(
             '<div class="child_pages child_pages-%s">',
             esc_attr($p['size'])
@@ -96,7 +105,7 @@ private function display($p, $template)
         'order' => 'ASC',
         'nopaging' => true,
     );
-    $args = apply_filters('child-pages-shortcode-query', $args);
+    $args = apply_filters('child-pages-shortcode-query', $args, $p);
 
     query_posts($args);
     if (have_posts()):
@@ -148,7 +157,7 @@ private function get_template()
         $html = $tpl;
     }
 
-    return apply_filters("child-pages-shortcode-template", $html);
+    return $html;
 }
 
 public function plugin_row_meta($links, $file)
