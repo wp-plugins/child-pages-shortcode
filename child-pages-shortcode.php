@@ -2,10 +2,10 @@
 /*
 Plugin Name: Child Pages Shortcode
 Author: Takayuki Miyauchi
-Plugin URI: http://firegoby.theta.ne.jp/wp/child-pages-shortcode
-Description: Display child pages.
-Version: 0.2.0
-Author URI: http://firegoby.theta.ne.jp/
+Plugin URI: http://wpist.me/wp/child-pages-shortcode/
+Description: You can use shortcode for display child pages from the page.
+Version: 1.1.2
+Author URI: http://wpist.me/
 Domain Path: /languages
 Text Domain: child-pages-shortcode
 */
@@ -14,77 +14,137 @@ new childPagesShortcode();
 
 class childPagesShortcode {
 
+private $ver = '0.9.0';
+
 function __construct()
 {
-    add_shortcode('child_pages', array(&$this, 'shortcode'));
-    add_action("wp_head", array(&$this, "wp_head"));
+    add_shortcode("child_pages", array(&$this, "shortcode"));
     add_action("init", array(&$this, "init"));
+    add_action("wp_enqueue_scripts", array(&$this, "wp_enqueue_scripts"));
+    add_filter("plugin_row_meta", array(&$this, "plugin_row_meta"), 10, 2);
+    add_filter("child-pages-shortcode-output", "do_shortcode");
 }
 
 public function init()
 {
+    add_post_type_support('page', 'excerpt');
+}
+
+public function wp_enqueue_scripts()
+{
+    $css = apply_filters(
+            "child-pages-shortcode-stylesheet",
+            plugins_url("style.css", __FILE__)
+    );
+    wp_register_style(
+        'child-pages-shortcode-css',
+        $css,
+        array(),
+        $this->ver,
+        'all'
+    );
+    wp_enqueue_style('child-pages-shortcode-css');
+
     $js = apply_filters(
         "child-pages-shortcode-js",
-        WP_PLUGIN_URL.'/'.dirname(plugin_basename(__FILE__)).'/script.js'
+        plugins_url("script.js", __FILE__)
     );
     wp_register_script(
         'child-pages-shortcode',
         $js,
         array('jquery'),
-        null,
-        true
+        $this->ver,
+        false
     );
     wp_enqueue_script('child-pages-shortcode');
 }
 
-public function shortcode($p)
+public function shortcode($p, $template = null)
 {
+	if( !isset($p['id']) || !intval($p['id']) ){
+		$p['id'] = get_the_ID();
+	}
     if (!isset($p['size']) || !$p['size']) {
         $p['size'] = 'thumbnail';
     }
     if (!isset($p['width']) || !intval($p['width'])) {
         $p['width'] = "50%";
     }
-    return $this->display($p);
+    return $this->display($p, $template);
 }
 
-private function display($p)
+private function display($p, $tpl)
 {
-    $posts = $this->get_posts($p);
-    $size = $p['size'];
-    $html = sprintf(
-        '<div class=" child_pages child_pages-%s">',
-        esc_attr($size)
+    $html = '';
+
+    if ($tpl) {
+        $template = $tpl;
+        $template = str_replace('<p>', '', $template);
+        $template = str_replace('</p>', '', $template);
+        $template = apply_filters(
+            'child-pages-shortcode-template',
+            $template,
+            $p
+        );
+    } else {
+        $template = apply_filters(
+            'child-pages-shortcode-template',
+            $this->get_template(),
+            $p
+        );
+        $html = sprintf(
+            '<div class="child_pages child_pages-%s">',
+            esc_attr($p['size'])
+        );
+    }
+
+    $args = array(
+        'post_status' => 'publish',
+        'post_type' => 'page',
+        'post_parent' => $p['id'],
+        'orderby' => 'menu_order',
+        'order' => 'ASC',
+        'nopaging' => true,
     );
-    $template = $this->get_template();
-    foreach ($posts as $post) {
+    $args = apply_filters('child-pages-shortcode-query', $args, $p);
+
+    query_posts($args);
+    if (have_posts()):
+    while (have_posts()) {
+        the_post();
         $img = null;
-        if ($tid = get_post_thumbnail_id($post->ID)) {
-            $src = wp_get_attachment_image_src($tid, $size);
+        if ($tid = get_post_thumbnail_id()) {
+            $src = wp_get_attachment_image_src($tid, $p['size']);
             $img = sprintf(
-                '<img src="%s" alt="" title="%s" />',
+                '<img src="%s" alt="%s" title="%s" />',
                 esc_attr($src[0]),
-                esc_attr($post->post_title)
+                esc_attr(get_the_title()),
+                esc_attr(get_the_title())
             );
         }
-        $url = get_permalink($post->ID);
+        $url = get_permalink(get_the_ID());
         $tpl = $template;
         $tpl = str_replace('%width%', esc_attr($p['width']), $tpl);
-        $tpl = str_replace('%post_id%', intval($post->ID), $tpl);
-        $tpl = str_replace('%post_title%', esc_html($post->post_title), $tpl);
+        $tpl = str_replace('%post_id%', intval(get_the_ID()), $tpl);
+        $tpl = str_replace('%post_title%', esc_html(get_the_title()), $tpl);
         $tpl = str_replace('%post_url%', esc_url($url), $tpl);
         $tpl = str_replace('%post_thumb%', $img, $tpl);
-        $tpl = str_replace('%post_excerpt%', esc_html($post->post_excerpt), $tpl);
+        $tpl = str_replace('%post_excerpt%', get_the_excerpt(), $tpl);
         $html .= $tpl;
     }
-    $html .= '</div>';
+    wp_reset_query();
+    endif; // end have_posts()
 
-    return $html;
+    if (!$tpl) {
+        $html .= '</div>';
+    }
+
+    return apply_filters("child-pages-shortcode-output", $html);
 }
 
 private function get_template()
 {
-    $html = '<div id="child_page-%post_id%" class="child_page" style="width:%width%;">';
+    $html = '<div id="child_page-%post_id%" class="child_page" style="width:%width%;max-width:100%;">';
     $html .= '<div class="child_page-container">';
     $html .= '<div class="post_thumb"><a href="%post_url%">%post_thumb%</a></div>';
     $html .= '<div class="post_content">';
@@ -93,35 +153,26 @@ private function get_template()
     $html .= '</div>';
     $html .= '</div>';
     $html .= '</div>';
-    return apply_filters("child-pages-shortcode-template", $html);
+
+    if ($tpl = get_post_meta(get_the_ID(), 'child-pages-template', true)) {
+        $html = $tpl;
+    }
+
+    return $html;
 }
 
-public function wp_head()
+public function plugin_row_meta($links, $file)
 {
-    $url = WP_PLUGIN_URL.'/'.dirname(plugin_basename(__FILE__)).'/style.css';
-    printf(
-        '<link rel="stylesheet" type="text/css" media="all" href="%s" />'."\n",
-        apply_filters("child-pages-shortcode-stylesheet", $url)
-    );
+    $pname = plugin_basename(__FILE__);
+    if ($pname === $file) {
+        $links[] = sprintf(
+            '<a href="%s">Donate</a>',
+            'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=8RADH554RPKDU'
+        );
+    }
+    return $links;
 }
 
-private function get_posts($p)
-{
-	global $post;
-	if( !isset($p['id']) || !intval($p['id']) ){
-		$p['id'] = $post->ID;
-	}
-    $args = array(
-        'post_status' => 'publish',
-        'post_type' => 'page',
-        'post_parent' => $p['id'],
-        'orderby' => 'menu_order',
-        'order' => 'ASC',
-        'numberposts' => '-1',
-    ); 
+} // end childPagesShortcode()
 
-    return get_posts($args);
-}
-
-}
-?>
+// eof
