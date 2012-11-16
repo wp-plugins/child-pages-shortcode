@@ -1,28 +1,30 @@
 === Child Pages Shortcode ===
 Contributors: miyauchi
-Donate link: http://firegoby.theta.ne.jp/
-Tags: shortcode 
+Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=8RADH554RPKDU
+Tags: shortcode
 Requires at least: 3.2
-Tested up to: 3.2
-Stable tag: 0.2.0
+Tested up to: 3.4
+Stable tag: 1.1.4
 
-Shortcode display child pages.
+You can use shortcode for display child pages from the page.
 
 == Description ==
 
-Shortcode display child pages.
+You can use shortcode for display child pages from the page.
 
 [This plugin maintained on GitHub.](https://github.com/miya0001/child-pages-shortcode)
 
 = Some features =
 
-* Shortcode display child pages.
+* This plugin will add shortcode `[child_pages]` display child pages.
 * You can customize default HTML template on your plugin.
+* This plugin will be able to "excerpt" to the pages.
 
 = Example =
 
 Display child pages of the current page.
-`[child_pages]`
+`[child_pages width="33%"]`
+
 
 = Args =
 
@@ -31,6 +33,28 @@ Display child pages of the current page.
 * width - width of block for child pages.
 
 = filter hooks example =
+
+Filter for query_posts() query.
+
+`<?php
+    // default args
+    $args = array(
+        'post_status' => 'publish',
+        'post_type' => 'page',
+        'post_parent' => $id_for_the_post,
+        'orderby' => 'menu_order',
+        'order' => 'ASC',
+        'nopaging' => true,
+    );
+
+    add_filters('child-pages-shortcode-query', "my_query");
+    function my_query($args) {
+        //
+        // some code here
+        //
+        return $args;
+    }
+?>`
 
 Filter for default template.
 
@@ -50,15 +74,35 @@ Filter for stylesheet URI.
     }
 ?>`
 
+Default Template
+
+`<div id="child_page-%post_id%" class="child_page" style="width:%width%;">
+    <div class="child_page-container">
+        <div class="post_thumb"><a href="%post_url%">%post_thumb%</a></div>
+        <div class="post_content">
+            <h4><a href="%post_url%">%post_title%</a></h4>
+            <div class="post_excerpt">%post_excerpt%</div>
+        </div>
+    </div>
+</div>`
+
+Template valiables
+
+* %post_id% - ID of the Page
+* %width% - Width of block for single page
+* %post_url% - Page permalink
+* %post_thumb% - <img> for Post thubmail
+* %post_title% - Page title
+* %post_excerpt% - Page excerpt
+
 = Support =
 
-* @miya0001 on twitter.
-* http://www.facebook.com/firegoby
-* https://github.com/miya0001/child-pages-shortcode
+* http://wpist.me/wp/child-pages-shortcode/ (en)
+* http://firegoby.theta.ne.jp/wp/child-pages-shortcode (ja)
 
 = Contributors =
 
-* [Takayuki Miyauchi](http://firegoby.theta.ne.jp/)
+* [Takayuki Miyauchi](http://wpist.me/)
 
 == Installation ==
 
@@ -67,6 +111,31 @@ Filter for stylesheet URI.
 * The plug-in is made effective.
 
 == Changelog ==
+
+= 1.1.4 =
+* bug fix on non-responsive theme
+
+= 1.1.3 =
+* Bug fix
+
+= 1.1.2 =
+* Bug fix
+
+= 1.0.1 =
+* Add filter hook "child-pages-shortcode-output"
+
+= 0.9.0 =
+* Add filter hook "child-pages-shortcode-query" 
+* Load stylesheet by wp_enqueue_style()
+
+= 0.8.0 =
+* Add style "max-width:100%".
+
+= 0.4.0 =
+* add `add_post_type_support("page", "excerpt");`
+
+= 0.3.0 =
+* Adapt to no-image.
 
 = 0.1.0 =
 * The first release.
@@ -78,4 +147,6 @@ The author must acknowledge the thing that the operation guarantee and the suppo
 
 == Contact ==
 
-twitter @miya0001
+* http://wpist.me/
+* [@wpist_me](https://twitter.com/#!/wpist_me)
+
