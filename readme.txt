@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: shortcode
 Requires at least: 3.4
 Tested up to: 3.5
-Stable tag: 1.5.0
+Stable tag: 1.5.1
 
 You can use shortcode for display child pages from the page.
 
@@ -32,6 +32,7 @@ Display child pages of the current page.
 * size - Post thumbnail size. e.g. 'thumbnail' or 'large'
 * width - width of block for child pages.
 * disable_shortcode - Shortcode not work in the template if set true.
+* disable_excerpt_filters - filters not work for the excerpt if set true.
 
 = filter hooks example =
 
@@ -95,7 +96,6 @@ Template valiables
 * %post_thumb% - <img> for Post thubmail
 * %post_title% - Page title
 * %post_excerpt% - Page excerpt
-* %post_content% - Page content (Applied the_content filteres)
 
 = Support =
 
