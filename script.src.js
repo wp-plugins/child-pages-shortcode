@@ -1,5 +1,4 @@
-(function(){
-    var $ = jQuery;
+(function($){
     $.fn.equalHeights = function() {
         var currentTallest = 0;
         $(this).each(function(){
@@ -11,6 +10,7 @@
         return this;
     };
     $.event.add(window, "load", function(){
+        $(".child_pages .post_thumb").equalHeights();
         $(".child_pages .child_page-container").equalHeights();
     });
 })(jQuery);
