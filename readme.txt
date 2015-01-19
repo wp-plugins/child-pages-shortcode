@@ -1,10 +1,9 @@
 === Child Pages Shortcode ===
 Contributors: miyauchi
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=FR7RD5SGEU69Y
 Tags: shortcode
 Requires at least: 3.4
-Tested up to: 4.0
-Stable tag: 1.9.1
+Tested up to: 4.1
+Stable tag: 1.9.2
 
 You can use shortcode for display child pages from the page.
 
@@ -114,6 +113,9 @@ Template valiables
 
 == Changelog ==
 
+= 1.9.2 =
+* Tested on WordPress 4.1.
+
 = 1.9.1 =
 * bug fix - js not found
 
@@ -169,4 +171,3 @@ The author must acknowledge the thing that the operation guarantee and the suppo
 
 * http://wpist.me/
 * [@wpist_me](https://twitter.com/#!/wpist_me)
-
